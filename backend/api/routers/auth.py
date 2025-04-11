@@ -19,7 +19,7 @@ class RegisterRequest(BaseModel):
 
 @router.post("/login", response_model=UserResponse)
 def login(data: LoginRequest):
-    user = db.users.get(data.username)
+    user = db.get_user(data.username)
     if user and user["password"] == data.password:
         return UserResponse(username=user["username"], full_name=user["full_name"])
     raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid credentials")
@@ -30,17 +30,12 @@ def logout():
 
 @router.get("/me", response_model=UserResponse)
 def get_current_user():
-    # Always returns the demo user for simplicity
-    user = db.users.get("demo")
+    user = db.get_user("demo")
     return UserResponse(username=user["username"], full_name=user["full_name"])
 
 @router.post("/register", response_model=UserResponse)
 def register(data: RegisterRequest):
-    if data.username in db.users:
+    if db.get_user(data.username):
         raise HTTPException(status_code=400, detail="Username already exists")
-    db.users[data.username] = {
-        "username": data.username,
-        "password": data.password,
-        "full_name": data.full_name,
-    }
+    db.create_user(data.username, data.password, data.full_name)
     return UserResponse(username=data.username, full_name=data.full_name)

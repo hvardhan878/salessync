@@ -5,6 +5,7 @@ from dotenv import load_dotenv
 from fastapi.responses import HTMLResponse
 from datetime import datetime
 from .routers import auth, salesforce
+from . import db
 
 # Load environment variables
 load_dotenv()
@@ -15,6 +16,10 @@ SERVER_START_TIME = datetime.now().isoformat()
 app = FastAPI(title="Simple FastAPI App", 
              description="A clean FastAPI application",
              version="1.0.0")
+
+@app.on_event("startup")
+def startup():
+    db.init_db()
 
 # Enable CORS
 app.add_middleware(
