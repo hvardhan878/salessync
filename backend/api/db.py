@@ -47,7 +47,7 @@ def get_db():
         conn.close()
 
 # --- User CRUD ---
-def get_user(username):
+def get_user_by_username(username):
     with get_db() as conn:
         c = conn.cursor()
         c.execute("SELECT * FROM users WHERE username = ?", (username,))
@@ -59,6 +59,30 @@ def create_user(username, password, full_name):
         c.execute("INSERT INTO users (username, password, full_name) VALUES (?, ?, ?)",
                   (username, password, full_name))
         conn.commit()
+
+def list_users():
+    with get_db() as conn:
+        c = conn.cursor()
+        c.execute("SELECT * FROM users")
+        return c.fetchall()
+
+def update_user(username, password=None, full_name=None):
+    with get_db() as conn:
+        c = conn.cursor()
+        if password and full_name:
+            c.execute("UPDATE users SET password = ?, full_name = ? WHERE username = ?", (password, full_name, username))
+        elif password:
+            c.execute("UPDATE users SET password = ? WHERE username = ?", (password, username))
+        elif full_name:
+            c.execute("UPDATE users SET full_name = ? WHERE username = ?", (full_name, username))
+        conn.commit()
+
+def delete_user(username):
+    with get_db() as conn:
+        c = conn.cursor()
+        c.execute("DELETE FROM users WHERE username = ?", (username,))
+        conn.commit()
+        return c.rowcount
 
 # --- Accounts CRUD ---
 def get_accounts():
